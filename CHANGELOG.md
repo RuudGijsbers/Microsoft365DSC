@@ -1,6 +1,30 @@
 # Change log for Microsoft365DSC
 
-# Unreleased
+# 1.21.1124.1
+
+* IntuneAppProtectionPolicyiOS
+  * Fixes to the Invoke-MgGraphRequest cmdlets parameters;
+* MISC
+  * Removed the Quiet switch from the Assert Blueprint cmdlet;
+    ISSUE #1563
+
+# 1.21.1117.2
+
+* MISC
+  * Fixes old Intune Graph Request cmdlet name;
+
+# 1.21.1117.1
+
+* EXOTransportRule
+  * Fixed issues with invalid State property and missing Enabled one;
+    ISSUE #1554;
+* IntuneDeviceCompliancePolicyAndroidDeviceOwner
+  * Initial release;
+* DEPENDENCIES
+  * Updated DSCParser to version 1.3.0.2;
+  * Updated MSCloudLoginAssistant to version 1.0.78;
+
+# 1.21.1110.1
 
 * MISC
   * Standardized examples
@@ -9,16 +33,8 @@
   * Added cmdlet to configure delegated permissions to Graph app based on
     settings.json file (Update-M365DSCAllowedGraphScopes)
   * Preparation to run integration tests dynamically using the resource examples
-
-# 1.21.1013.1
-
-* MISC
-  * Standardized examples
-  * Added missing examples
-  * Added settings.json generator cmdlet (Update-M365DSCResourcesSettingsJSON)
-  * Added cmdlet to configure delegated permissions to Graph app based on
-    settings.json file (Update-M365DSCAllowedGraphScopes)
-  * Preparation to run integration tests dynamically using the resource examples
+* DEPENDENCIES
+  * Updated MSCloudLoginAssistant to version 1.0.76;
 
 # 1.21.1103.1
 
