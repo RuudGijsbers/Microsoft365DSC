@@ -819,16 +819,16 @@ function Get-TargetResource
             Write-Verbose -Message "No Device Configuration Policy {$DisplayName} was found"
             return $nullResult
         }
-        $AdditionalProperties = $AdditionalProperties | ConvertTo-Json | ConvertFrom-Json
+        $AdditionalProperties = $policy.AdditionalProperties | ConvertTo-Json | ConvertFrom-Json
         #$managedApps = $policy.AdditionalProperties.networkUsageRules.managedApps | ConvertTo-Json | ConvertFrom-Json
         $NetworkUsageRules = $policy.AdditionalProperties.networkUsageRules #| ConvertTo-Json | ConvertFrom-Json
-        foreach ($rule in $NetworkUsageRules) {
-            $rules += $rule | ConvertTo-Json| ConvertFrom-Json
-        }
-        $UsageRules = $rules | ConvertFrom-Json
+        $NetworkUsageRules = ConvertTo-NetworkUsageRulesString $NetworkUsageRules
+        $deviceManagementApplicabilityRuleDeviceMode = $policy.deviceManagementApplicabilityRuleDeviceMode | ConvertTo-Json | ConvertFrom-Json
+        $deviceManagementApplicabilityRuleOsEdition = $policy.deviceManagementApplicabilityRuleOsEdition | ConvertTo-Json | ConvertFrom-Json
+        $deviceManagementApplicabilityRuleOsVersion = $policy.deviceManagementApplicabilityRuleOsVersion | ConvertTo-Json | ConvertFrom-Json
 
         Write-Verbose -Message "Found Device Configuration Policy {$DisplayName}"
-        $result = @{
+        $Result = @{
             DisplayName                                    = $policy.DisplayName
             Description                                    = $policy.Description
             AccountBlockModification                       = $AdditionalProperties.accountBlockModification
@@ -940,7 +940,7 @@ function Get-TargetResource
             MediaContentRatingNewZealand                   = $AdditionalProperties.mediaContentRatingNewZealand
             MediaContentRatingUnitedKingdom                = $AdditionalProperties.mediaContentRatingUnitedKingdom
             MediaContentRatingUnitedStates                 = $AdditionalProperties.mediaContentRatingUnitedStates
-            NetworkUsageRules                              = $NetworkUsageRules
+            #NetworkUsageRules                              = $NetworkUsageRules
             MediaContentRatingApps                         = $AdditionalProperties.mediaContentRatingApps
             MessagesBlocked                                = $AdditionalProperties.messagesBlocked
             NotificationsBlockSettingsModification         = $AdditionalProperties.notificationsBlockSettingsModification
@@ -1866,92 +1866,15 @@ function Set-TargetResource
     {
         $CreationParams = $PSBoundParameters
         Write-Verbose -Message "Creating new Device Configuration Policy {$DisplayName}"
-        $PSBoundParameters.Remove('DisplayName') | Out-Null
-        $PSBoundParameters.Remove('Description') | Out-Null
-        if ($PSBoundParameters.ContainsKey("appsVisibilityList"))
-        {
-            $appsVisibilityList = Convert-CIMToAdvancedSettings $appsVisibilityList
-            $CreationParams["appsVisibilityList"] = $appsVisibilityList
-        }
-        elseif($PSBoundParameters.ContainsKey("appsSingleAppModeList"))
-        {
-            $appsSingleAppModeList = Convert-CIMToAdvancedSettings $appsVisibilityList
-            $CreationParams["appsSingleAppModeList"] = $appsSingleAppModeList
-        }
-        elseif($PSBoundParameters.ContainsKey("compliantAppsList"))
-        {
-            $compliantAppsList = Convert-CIMToAdvancedSettings $compliantAppsList
-            $CreationParams["compliantAppsList"] = $compliantAppsList
-        }
-        elseif($PSBoundParameters.ContainsKey("mediaContentRatingAustralia"))
-        {
-            $mediaContentRatingAustralia = Convert-CIMToAdvancedSettings $mediaContentRatingAustralia
-            $CreationParams["mediaContentRatingAustralia"] = $mediaContentRatingAustralia
-        }
-        elseif($PSBoundParameters.ContainsKey("mediaContentRatingCanada"))
-        {
-            $mediaContentRatingCanada = Convert-CIMToAdvancedSettings $mediaContentRatingCanada
-            $CreationParams["mediaContentRatingCanada"] = $mediaContentRatingCanada
-        }
-        elseif($PSBoundParameters.ContainsKey("mediaContentRatingFrance"))
-        {
-            $mediaContentRatingFrance = Convert-CIMToAdvancedSettings $mediaContentRatingFrance
-            $CreationParams["mediaContentRatingFrance"] = $mediaContentRatingFrance
-        }
-        elseif($PSBoundParameters.ContainsKey("mediaContentRatingGermany"))
-        {
-            $mediaContentRatingGermany = Convert-CIMToAdvancedSettings $mediaContentRatingGermany
-            $CreationParams["mediaContentRatingGermany"] = $mediaContentRatingGermany
-        }
-        elseif($PSBoundParameters.ContainsKey("mediaContentRatingIreland"))
-        {
-            $appsVisibilityList = Convert-CIMToAdvancedSettings $mediaContentRatingIreland
-            $CreationParams["mediaContentRatingIreland"] = $mediaContentRatingIreland
-        }
-        elseif($PSBoundParameters.ContainsKey("mediaContentRatingJapan"))
-        {
-            $mediaContentRatingJapan = Convert-CIMToAdvancedSettings $mediaContentRatingJapan
-            $CreationParams["mediaContentRatingJapan"] = $mediaContentRatingJapan
-        }
-        elseif($PSBoundParameters.ContainsKey("mediaContentRatingNewZealand"))
-        {
-            $appsVisibilityList = Convert-CIMToAdvancedSettings $mediaContentRatingNewZealand
-            $CreationParams["mediaContentRatingNewZealand"] = $mediaContentRatingNewZealand
-        }
-        elseif($PSBoundParameters.ContainsKey("mediaContentRatingUnitedKingdom"))
-        {
-            $mediaContentRatingUnitedKingdom = Convert-CIMToAdvancedSettings $mediaContentRatingUnitedKingdom
-            $CreationParams["mediaContentRatingUnitedKingdom"] = $mediaContentRatingUnitedKingdom
-        }
-        elseif($PSBoundParameters.ContainsKey("mediaContentRatingUnitedKingdom"))
-        {
-            $mediaContentRatingUnitedStates = Convert-CIMToAdvancedSettings $mediaContentRatingUnitedStates
-            $CreationParams["mediaContentRatingUnitedStates"] = $mediaContentRatingUnitedStates
-        }
-        elseif($PSBoundParameters.ContainsKey("iOSNetworkUsageRules"))
-        {
-            $iOSNetworkUsageRules = Convert-CIMToAdvancedSettings $iOSNetworkUsageRules
-            $CreationParams["iOSNetworkUsageRules"] = $iOSNetworkUsageRules
-        }
-        elseif($PSBoundParameters.ContainsKey("DeviceManagementApplicabilityRuleOsEdition"))
-        {
-            $DeviceManagementApplicabilityRuleOsEdition = Convert-CIMToAdvancedSettings $DeviceManagementApplicabilityRuleOsEdition
-            $CreationParams["DeviceManagementApplicabilityRuleOsEdition"] = $DeviceManagementApplicabilityRuleOsEdition
-        }
-        elseif($PSBoundParameters.ContainsKey("DeviceManagementApplicabilityRuleOsVersion"))
-        {
-            $DeviceManagementApplicabilityRuleOsVersion = Convert-CIMToAdvancedSettings $DeviceManagementApplicabilityRuleOsVersion
-            $CreationParams["DeviceManagementApplicabilityRuleOsVersion"] = $DeviceManagementApplicabilityRuleOsVersion
-        }
-        elseif($PSBoundParameters.ContainsKey("DeviceManagementApplicabilityRuleDeviceMode"))
-        {
-            $DeviceManagementApplicabilityRuleDeviceMode = Convert-CIMToAdvancedSettings $DeviceManagementApplicabilityRuleDeviceMode
-            $CreationParams["DeviceManagementApplicabilityRuleDeviceMode"] = $DeviceManagementApplicabilityRuleDeviceMode
-        }
-
+        $CreationParams.Remove('DisplayName') | Out-Null
+        $CreationParams.Remove('Description') | Out-Null
+        $CreationParams.Remove('deviceManagementApplicabilityRuleDeviceMode') | Out-Null
+        $CreationParams.Remove('deviceManagementApplicabilityRuleOsEdition') | Out-Null
+        $CreationParams.Remove('deviceManagementApplicabilityRuleOsVersion') | Out-Null
+        
         New-MGDeviceManagementDeviceConfiguration -DisplayName $DisplayName `
             -Description $Description `
-            -AdditionalProperties $CreationParams
+            -AdditionalProperties $CreationParams 
     }
     elseif ($Ensure -eq 'Present' -and $currentPolicy.Ensure -eq 'Present')
     {
@@ -3155,85 +3078,36 @@ function ConvertTo-NetworkUsageRulesString
     (
         [Parameter(Mandatory = $true)]
         [System.Object[]]
-        $NetWorkUsageRule
+        $NetWorkUsageRules
     )
     $result = ""
-    $StringContent += "@(`r`n"
-    foreach ($rule in $NetWorkUsageRule){
-        $StringContent = "MSFT_NetWorkUsageRule`r`n            {`r`n"
-        $StringContent += "@(`r`n"
+    $StringContent = ""
+    $StringContent += "@{`r`n"
+    foreach ($rule in $NetWorkUsageRules){
+        $StringContent += "MSFT_NetWorkUsageRule`r`n            {`r`n"
+        $StringContent += "     @(`r`n"
         foreach ($app in $rule.managedApps){
-            $StringContent = "MSFT_AppListItem`r`n            {`r`n"
-            $StringContent += "                name = '$app.Name'`r`n"
-            $StringContent += "                publisher = '$app.publisher'`r`n"
-            $StringContent += "                appId = '$app.appId'`r`n"
-            $StringContent += "            }`r`n"
+            $app = $app | ConvertTo-Json | ConvertFrom-Json
+            $StringContent += "         MSFT_AppListItem`r`n            {`r`n"
+            $StringContent += "             name = '$($app.Name)'`r`n"
+            $StringContent += "             publisher = '$($app.publisher)'`r`n"
+            $StringContent += "             appId = '$($app.appId)'`r`n"
+            $StringContent += "         }`r`n"
+            #$result += $StringContent
         }
-        $StringContent += "                cellularDataBlockWhenRoaming = '$rule.cellularDataBlockWhenRoaming'`r`n"
-        $StringContent += "                cellularDataBlocked = '$app.cellularDataBlocked'`r`n"
-        $StringContent += "            )}`r`n"
-        $result += $StringContent        
+        $rule = $rule | ConvertTo-Json | ConvertFrom-Json
+        $StringContent += "         cellularDataBlockWhenRoaming = '$($rule.cellularDataBlockWhenRoaming)'`r`n"
+        $StringContent += "         cellularDataBlocked = '$($rule.cellularDataBlocked)'`r`n"
+        $StringContent += "     )}`r`n"
+        #$result += $StringContent     
     }
-    return $result
-    
-}
-
-    
-    $StringContent = "MSFT_NetWorkUsageRule`r`n            {`r`n"
-    foreach ($app in $rule.managedApps){
-        $StringContent = "MSFT_AppListItem`r`n            {`r`n"
-        $StringContent += "                name = '$app.Name'`r`n"
-        $StringContent += "                publisher = '$app.publisher'`r`n"
-        $StringContent += "                appId = '$app.appId'`r`n"
-        $StringContent += "            }`r`n"
-
-    }
-    $StringContent += "                SensitiveInformation = "
-    $StringContent += "@(`r`n"
+    $StringContent += "   }`r`n"
+    $StringContent += "}`r`n"
     $result += $StringContent
-    foreach ($SensitiveInformationHash in $InformationArray)
-    {
-
-        $StringContent = "MSFT_SCDLPSensitiveInformation`r`n            {`r`n"
-        $StringContent += "                name = '$($SensitiveInformationHash.name.Replace("'", "''"))'`r`n"
-
-        if ($null -ne $SensitiveInformationHash.id)
-        {
-            $StringContent += "                id = '$($SensitiveInformationHash.id)'`r`n"
-        }
-
-        if ($null -ne $SensitiveInformationHash.maxconfidence)
-        {
-            $StringContent += "                maxconfidence = '$($SensitiveInformationHash.maxconfidence)'`r`n"
-        }
-
-        if ($null -ne $SensitiveInformationHash.minconfidence)
-        {
-            $StringContent += "                minconfidence = '$($SensitiveInformationHash.minconfidence)'`r`n"
-        }
-
-        if ($null -ne $SensitiveInformationHash.classifiertype)
-        {
-            $StringContent += "                classifiertype = '$($SensitiveInformationHash.classifiertype)'`r`n"
-        }
-
-        if ($null -ne $SensitiveInformationHash.mincount)
-        {
-            $StringContent += "                mincount = '$($SensitiveInformationHash.mincount)'`r`n"
-        }
-
-        if ($null -ne $SensitiveInformationHash.maxcount)
-        {
-            $StringContent += "                maxcount = '$($SensitiveInformationHash.maxcount)'`r`n"
-        }
-
-        $StringContent += "            }`r`n"
-        $result += $StringContent
-    }
-    $result += "            )"
-    $result += "            }`r`n"
-    return $result
+    Return $result
 }
+
+    
 
 function Convert-StringToAdvancedSettings
 {
